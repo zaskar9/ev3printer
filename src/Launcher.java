@@ -7,7 +7,7 @@
  * Use is subject to license terms. Please refer to the included copyright notice.
  */
 
-import kn.uni.inf.ev3.printer.Printer;
+import kn.uni.inf.ev3.printer.BannerPrinter;
 
 import lejos.hardware.lcd.LCD;
 import lejos.utility.Delay;
@@ -18,8 +18,8 @@ import lejos.utility.Delay;
 public class Launcher {
 
    public static void main(final String[] args) {
-      final Printer p = new Printer();
-      p.drawCircle();
+      final BannerPrinter p = new BannerPrinter();
+      // p.drawCircle();
       LCD.drawString("Printing done.", 0, 3);
       Delay.msDelay(3000);
    }

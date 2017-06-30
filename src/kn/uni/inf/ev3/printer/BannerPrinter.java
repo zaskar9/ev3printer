@@ -18,23 +18,23 @@ import lejos.robotics.RegulatedMotor;
  */
 public class BannerPrinter {
 
-   /** The A motor handles the Y coordinates for the pen. */
+   /** The A motor handles the lifting and lowering of the pen. */
    private final RegulatedMotor aMotor;
 
-   /** The B motor handles the lifting and lowering of the pen. */
+   /** The B motor handles the X coordinates for the paper. */
    private final RegulatedMotor bMotor;
 
-   /** The C motor handles the X coordinates for the paper. */
+   /** The C motor handles the Y coordinates for the pen. */
    private final RegulatedMotor cMotor;
 
    /**
     * Instantiates and sets up the printer.
     */
    public BannerPrinter() {
-      this.aMotor = new EV3MediumRegulatedMotor(MotorPort.A);
+      this.aMotor = new EV3LargeRegulatedMotor(MotorPort.A);
       this.bMotor = new EV3LargeRegulatedMotor(MotorPort.B);
-      this.cMotor = new EV3LargeRegulatedMotor(MotorPort.C);
-      this.aMotor.synchronizeWith(new RegulatedMotor[] { this.cMotor });
+      this.cMotor = new EV3MediumRegulatedMotor(MotorPort.C);
+      // this.bMotor.synchronizeWith(new RegulatedMotor[] { this.cMotor });
    }
 
    /**
@@ -44,7 +44,7 @@ public class BannerPrinter {
     * the pen in the up position! The {@code x} parameter moves the paper left and right. You can use any
     * value for {@code x}, but a reasonable character width is {@code 50}. The {@code y} parameter moves the
     * pen up and down: {@code 0} is the lowest value, and {@code 100} is the highest value.
-    * 
+    *
     * @param x
     *           X-coordinate of the pen (left and right)
     * @param y
@@ -54,30 +54,29 @@ public class BannerPrinter {
     */
    private void plotStep(final int x, final int y, final boolean liftPen) {
       this.setPenState(liftPen);
-      this.aMotor.setSpeed(420);
+      this.bMotor.setSpeed(420);
       this.cMotor.setSpeed(300);
-      int aAngle = (int) (y * 2.8 - this.aMotor.getTachoCount());
-      int cAngle = (int) (x * 3.6 - this.cMotor.getTachoCount());
-      this.aMotor.startSynchronization();
-      this.aMotor.rotate(aAngle, true);
-      this.cMotor.rotate(cAngle, true);
-      this.aMotor.endSynchronization();
-      this.aMotor.waitComplete();
+      final int bAngle = (int) (x * 3.6 - this.bMotor.getTachoCount());
+      final int cAngle = (int) (y * 3.2 - this.cMotor.getTachoCount());
+      this.bMotor.startSynchronization();
+      this.bMotor.rotate(bAngle, true);
+      System.out.println(cAngle);
+      this.cMotor.rotate(cAngle);
+      this.bMotor.endSynchronization();
+      this.bMotor.waitComplete();
       this.cMotor.waitComplete();
    }
 
    /**
     * Sets the state of the pen, i.e., whether it is lifted or lowered.
-    * 
+    *
     * @param liftPen
     *           {@code true} if the pen should be lifted, {@code false} otherwise
     */
-   private void setPenState(final boolean liftPen) {
-      final int z = liftPen ? 0 : 180;
-      int tacho = this.bMotor.getTachoCount();
-      int angle = z - tacho;
-      this.bMotor.rotate(angle);
-      this.bMotor.waitComplete();
+   public void setPenState(final boolean liftPen) {
+      final int angle = (liftPen ? 0 : 180) - this.aMotor.getTachoCount();
+      this.aMotor.rotate(angle);
+      this.aMotor.waitComplete();
    }
 
    /**
@@ -89,6 +88,16 @@ public class BannerPrinter {
       this.plotStep(0, 0, false);
       this.plotStep(50, 0, false);
       this.plotStep(60, 0, true);
+      this.bMotor.resetTachoCount();
+      // Print the E
+      this.plotStep(50, 100, true);
+      this.plotStep(0, 100, false);
+      this.plotStep(0, 0, false);
+      this.plotStep(50, 0, false);
+      this.plotStep(0, 50, true);
+      this.plotStep(50, 50, false);
+      this.plotStep(60, 0, true);
+      this.bMotor.resetTachoCount();
    }
 
 }

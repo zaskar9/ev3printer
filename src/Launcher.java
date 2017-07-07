@@ -18,7 +18,7 @@ public class Launcher {
 
    public static void main(final String[] args) {
       final BannerPrinter p = new BannerPrinter();
-      p.printLogo();
+      p.print();
       LCD.drawString("Printing done.", 0, 3);
       Delay.msDelay(3000);
    }

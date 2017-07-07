@@ -32,9 +32,12 @@ public class BannerPrinter {
     */
    public BannerPrinter() {
       this.aMotor = new EV3LargeRegulatedMotor(MotorPort.A);
+      this.aMotor.resetTachoCount();
       this.bMotor = new EV3LargeRegulatedMotor(MotorPort.B);
+      this.bMotor.resetTachoCount();
       this.cMotor = new EV3MediumRegulatedMotor(MotorPort.C);
-      // this.bMotor.synchronizeWith(new RegulatedMotor[] { this.cMotor });
+      this.cMotor.resetTachoCount();
+      this.bMotor.synchronizeWith(new RegulatedMotor[] { this.cMotor });
    }
 
    /**
@@ -54,14 +57,13 @@ public class BannerPrinter {
     */
    private void plotStep(final int x, final int y, final boolean liftPen) {
       this.setPenState(liftPen);
-      this.bMotor.setSpeed(420);
-      this.cMotor.setSpeed(300);
+      this.bMotor.setSpeed(200);
+      this.cMotor.setSpeed(750);
       final int bAngle = (int) (x * 3.6 - this.bMotor.getTachoCount());
-      final int cAngle = (int) (y * 3.2 - this.cMotor.getTachoCount());
+      final int cAngle = (int) (y * 3.0 - this.cMotor.getTachoCount());
       this.bMotor.startSynchronization();
       this.bMotor.rotate(bAngle, true);
-      System.out.println(cAngle);
-      this.cMotor.rotate(cAngle);
+      this.cMotor.rotate(cAngle, true);
       this.bMotor.endSynchronization();
       this.bMotor.waitComplete();
       this.cMotor.waitComplete();
@@ -73,31 +75,108 @@ public class BannerPrinter {
     * @param liftPen
     *           {@code true} if the pen should be lifted, {@code false} otherwise
     */
-   public void setPenState(final boolean liftPen) {
+   private void setPenState(final boolean liftPen) {
       final int angle = (liftPen ? 0 : 180) - this.aMotor.getTachoCount();
       this.aMotor.rotate(angle);
       this.aMotor.waitComplete();
    }
 
    /**
-    * Prints the "LEGO EV3" logo.
+    * Prints a blank of 10 units and resets the coordinate system for the next letter.
     */
-   public void printLogo() {
-      // Print the L
-      this.plotStep(0, 100, true);
-      this.plotStep(0, 0, false);
-      this.plotStep(50, 0, false);
-      this.plotStep(60, 0, true);
+   private void printBlank() {
       this.bMotor.resetTachoCount();
-      // Print the E
+      this.plotStep(10, 0, true);
+      this.bMotor.resetTachoCount();
+   }
+
+   /**
+    * Prints the letter "E".
+    */
+   private void printE() {
       this.plotStep(50, 100, true);
       this.plotStep(0, 100, false);
       this.plotStep(0, 0, false);
       this.plotStep(50, 0, false);
       this.plotStep(0, 50, true);
       this.plotStep(50, 50, false);
-      this.plotStep(60, 0, true);
-      this.bMotor.resetTachoCount();
+      this.printBlank();
+   }
+
+   /**
+    * Prints the letter "L".
+    */
+   private void printL() {
+      this.plotStep(0, 100, true);
+      this.plotStep(0, 0, false);
+      this.plotStep(50, 0, false);
+      this.printBlank();
+   }
+
+   /**
+    * Prints the letter "V".
+    */
+   private void printV() {
+      this.plotStep(0, 100, true);
+      this.plotStep(30, 0, false);
+      this.plotStep(60, 100, false);
+      this.printBlank();
+   }
+
+   /**
+    * Prints the "LEGO EV3" logo.
+    */
+   public void print() {
+      // Print the V
+      this.printV();
+      // Print the E
+      // this.printE();
+      // Print the L
+      // this.printL();
    }
 
 }
+
+//private void plotStep(final int x, final int y, final boolean liftPen) {
+//   this.setPenState(liftPen);
+//   int bTacho = this.bMotor.getTachoCount();
+//   int cTacho = this.cMotor.getTachoCount();
+//   final int bDegrees = (int) (x * 3.6 - bTacho);
+//   final int cDegrees = (int) (y * 3.1 - cTacho);
+//   float bAbsDegrees = Math.abs(bDegrees);
+//   float cAbsDegrees = Math.abs(cDegrees);
+//   boolean bRunning = false;
+//   boolean cRunning = false;
+//   if (bDegrees == 0) {
+//      this.bMotor.setPower(0);
+//   } else {
+//      this.bMotor.setPower(50);
+//      if (bDegrees > 0) {
+//         this.bMotor.forward();
+//      } else {
+//         this.bMotor.backward();
+//      }
+//      bRunning = true;
+//   }
+//   if (cDegrees == 0) {
+//      this.cMotor.setPower(0);
+//   } else {
+//      this.cMotor.setPower(80);
+//      if (cDegrees > 0) {
+//         this.cMotor.forward();
+//      } else {
+//         this.cMotor.backward();
+//      }
+//      cRunning = true;
+//   }
+//   while (bRunning || cRunning) {
+//      if (Math.abs(this.bMotor.getTachoCount() - bTacho) >= bAbsDegrees) {
+//         this.bMotor.stop();
+//         bRunning = false;
+//      }
+//      if (Math.abs(this.cMotor.getTachoCount() - cTacho) >= cAbsDegrees) {
+//         this.cMotor.stop();
+//         cRunning = false;
+//      }
+//   }
+//}
